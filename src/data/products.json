@@ -1,0 +1,40 @@
+[
+  {
+    "id": "1737954352509",
+    "title": "Camiseta Real Madrid",
+    "description": "Camiseta de fútbol",
+    "code": "C2",
+    "price": 6000,
+    "stock": 10,
+    "category": "Ropa",
+    "thumbnails": [
+      "url1",
+      "url2"
+    ],
+    "status": true
+  },
+  {
+    "id": "1737954490631",
+    "title": "Camiseta Barcelona",
+    "description": "Camiseta de fútbol",
+    "code": "C123",
+    "price": 6000,
+    "stock": 10,
+    "category": "Ropa",
+    "thumbnails": [
+      "url1",
+      "url2"
+    ],
+    "status": true
+  },
+  {
+    "title": "camiseta manchester city",
+    "price": "20000",
+    "id": "1739211712772"
+  },
+  {
+    "title": "Camiseta Benfica",
+    "price": "20000",
+    "id": "1739211962947"
+  }
+]
