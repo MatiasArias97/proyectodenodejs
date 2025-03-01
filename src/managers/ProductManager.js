@@ -1,34 +1,42 @@
-const fs = require('fs').promises;
-const path = require('path');
+const mongoose = require('mongoose');
+
+// Esquema de Producto con Mongoose
+const productSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    price: { type: Number, required: true },
+    stock: { type: Number, required: true },
+    description: { type: String, required: true }
+});
+
+const Product = mongoose.model('Product', productSchema);
 
 class ProductManager {
-    constructor(filePath) {
-        this.filePath = path.resolve(filePath);
-    }
-
     async getProducts() {
         try {
-            const data = await fs.readFile(this.filePath, 'utf-8');
-            return JSON.parse(data);
+            const products = await Product.find();
+            return products;
         } catch (error) {
+            console.error('Error al obtener productos:', error);
             return [];
         }
     }
 
     async addProduct(product) {
-        const products = await this.getProducts();
-        product.id = Date.now().toString();
-        products.push(product);
-        await fs.writeFile(this.filePath, JSON.stringify(products, null, 2));
+        try {
+            const newProduct = new Product(product);
+            await newProduct.save();
+        } catch (error) {
+            console.error('Error al agregar producto:', error);
+        }
     }
 
     async deleteProduct(id) {
-        const products = await this.getProducts();
-        const filteredProducts = products.filter(p => p.id.toString() !== id.toString());
-        await fs.writeFile(this.filePath, JSON.stringify(filteredProducts, null, 2));
-        
+        try {
+            await Product.findByIdAndDelete(id);
+        } catch (error) {
+            console.error('Error al eliminar producto:', error);
+        }
     }
-    
 }
 
 module.exports = ProductManager;

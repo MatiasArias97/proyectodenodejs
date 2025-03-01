@@ -6,8 +6,13 @@ class CartManager {
   }
 
   async getCarts() {
-    const data = await fs.readFile(this.path, 'utf-8');
-    return JSON.parse(data);
+    try {
+      const data = await fs.readFile(this.path, 'utf-8');
+      return JSON.parse(data);
+    } catch (error) {
+      // Si no existe el archivo, retorna un arreglo vacío
+      return [];
+    }
   }
 
   async getCartById(id) {
@@ -23,17 +28,36 @@ class CartManager {
     return newCart;
   }
 
-  async addProductToCart(cid, pid) {
+  // Actualizado para permitir sumar cantidad (por defecto 1)
+  async addProductToCart(cid, pid, quantity = 1) {
     const carts = await this.getCarts();
     const cart = carts.find(c => c.id === cid);
     if (!cart) return null;
 
     const productIndex = cart.products.findIndex(p => p.product === pid);
     if (productIndex === -1) {
-      cart.products.push({ product: pid, quantity: 1 });
+      // Agrega el producto con la cantidad indicada
+      cart.products.push({ product: pid, quantity: quantity });
     } else {
-      cart.products[productIndex].quantity += 1;
+      // Incrementa la cantidad existente
+      cart.products[productIndex].quantity += quantity;
     }
+
+    await fs.writeFile(this.path, JSON.stringify(carts, null, 2));
+    return cart;
+  }
+
+  // Nuevo método para eliminar un producto del carrito
+  async removeProductFromCart(cid, pid) {
+    const carts = await this.getCarts();
+    const cart = carts.find(c => c.id === cid);
+    if (!cart) return null;
+
+    const productIndex = cart.products.findIndex(p => p.product === pid);
+    if (productIndex === -1) return cart; // Si no se encuentra, no se modifica
+
+    // Elimina el producto del carrito
+    cart.products.splice(productIndex, 1);
 
     await fs.writeFile(this.path, JSON.stringify(carts, null, 2));
     return cart;
@@ -44,12 +68,10 @@ class CartManager {
     try {
       const carts = await this.getCarts();
       const cartIndex = carts.findIndex(cart => cart.id === cartId);
-
       if (cartIndex === -1) {
         return null; // Carrito no encontrado
       }
-
-      carts.splice(cartIndex, 1); // Eliminar carrito
+      carts.splice(cartIndex, 1); // Elimina el carrito
       await fs.writeFile(this.path, JSON.stringify(carts, null, 2));
       return true; // Eliminado con éxito
     } catch (error) {

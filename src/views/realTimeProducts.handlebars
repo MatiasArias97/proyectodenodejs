@@ -1,60 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{title}}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <!-- Si tienes estilos, enlázalos -->
+  <link rel="stylesheet" href="../public/style.css">
 </head>
 <body>
-    <h1>{{title}}</h1>
+  <h1>{{title}}</h1>
 
-    <!-- Formulario para agregar productos -->
-    <form id="productForm">
-        <input type="text" id="title" placeholder="Nombre del producto" required>
-        <input type="number" id="price" placeholder="Precio" required>
-        <button type="submit">Agregar Producto</button>
-    </form>
+  <!-- Formulario para agregar productos -->
+  <form id="productForm">
+    <input type="text" id="title" placeholder="Nombre del producto" required>
+    <input type="number" id="price" placeholder="Precio" required>
+    <button type="submit">Agregar Producto</button>
+  </form>
 
-    <!-- Lista de productos -->
-    <ul id="productList">
-        {{#each products}}
-            <li id="product-{{this.id}}">
-                {{this.title}} - ${{this.price}} 
-                <button onclick="deleteProduct('{{this.id}}')">❌</button>
-            </li>
-        {{/each}}
-    </ul>
+  <!-- Formulario de filtros, paginación y ordenamiento -->
+  <form id="filterForm">
+    <label for="filterCategory">Categoría:</label>
+    <input type="text" id="filterCategory" placeholder="Categoría">
+    
+    <label for="filterPriceRange">Rango de Precio (min-max):</label>
+    <input type="text" id="filterPriceRange" placeholder="50-150">
+    
+    <label for="filterSort">Ordenar por:</label>
+    <select id="filterSort">
+      <option value="">Sin ordenar</option>
+      <option value="price:asc">Precio ascendente</option>
+      <option value="price:desc">Precio descendente</option>
+    </select>
+    
+    <label for="filterPage">Página:</label>
+    <input type="number" id="filterPage" value="1">
+    
+    <label for="filterLimit">Límite:</label>
+    <input type="number" id="filterLimit" value="10">
+    
+    <button type="submit">Aplicar filtros</button>
+  </form>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io(); // Conectar al WebSocket
+  <!-- Contenedor para la lista de productos -->
+  <ul id="productList">
+    {{#each products}}
+      <li id="product-{{this.id}}">
+        {{this.title}} - ${{this.price}} 
+        <button onclick="deleteProduct('{{this.id}}')">❌</button>
+      </li>
+    {{/each}}
+  </ul>
 
-        // Escuchar la actualización de productos en tiempo real
-        socket.on('updateProducts', (products) => {
-            const productList = document.getElementById('productList');
-            productList.innerHTML = ''; // Limpiar la lista de productos
-            products.forEach(product => {
-                const li = document.createElement('li');
-                li.id = `product-${product.id}`;
-                li.innerHTML = `${product.title} - $${product.price} <button onclick="deleteProduct('${product.id}')">❌</button>`;
-                productList.appendChild(li);
-            });
-        });
+  <!-- Contenedor para mostrar el carrito (si decides implementarlo en la vista) -->
+  <div id="cart-view"></div>
 
-        // Enviar evento para agregar un producto
-        document.getElementById('productForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const title = document.getElementById('title').value;
-            const price = document.getElementById('price').value;
-            const product = { title, price };
-            socket.emit('newProduct', product);
-            document.getElementById('title').value = '';
-            document.getElementById('price').value = '';
-        });
-
-        window.deleteProduct = function(id) {
-            socket.emit('deleteProduct', id);
-        };
-    </script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="../public/main.js"></script>
 </body>
 </html>
