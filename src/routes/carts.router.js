@@ -78,6 +78,59 @@ router.post('/:cid/product/:pid', async (req, res) => {
   }
 });
 
+// Ruta PUT /:cid/products/:pid - Actualizar cantidad de producto en el carrito
+router.put('/:cid/products/:pid', async (req, res) => {
+  try {
+    const { cid, pid } = req.params;
+    const { quantity } = req.body; // La cantidad viene desde el cuerpo de la solicitud
+
+    const cart = await Cart.findById(cid);
+    if (!cart) {
+      return res.status(404).json({ error: 'Carrito no encontrado' });
+    }
+
+    const productInCart = cart.products.find(p => p.product.toString() === pid);
+    if (productInCart) {
+      // Si el producto está en el carrito, actualizamos la cantidad
+      productInCart.quantity = quantity;
+      await cart.save();
+      io.emit('cartUpdated', await Cart.findById(cid).populate('products.product'));
+      res.status(200).json(cart);
+    } else {
+      res.status(404).json({ error: 'Producto no encontrado en el carrito' });
+    }
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error al actualizar la cantidad del producto en el carrito',
+      details: error.message,
+    });
+  }
+});
+
+// Ruta DELETE /:cid/products/:pid - Eliminar producto del carrito
+router.delete('/:cid/products/:pid', async (req, res) => {
+  try {
+    const { cid, pid } = req.params;
+    const cart = await Cart.findById(cid);
+    if (!cart) {
+      return res.status(404).json({ error: 'Carrito no encontrado' });
+    }
+
+    // Filtrar el producto que se quiere eliminar
+    cart.products = cart.products.filter(p => p.product.toString() !== pid);
+    await cart.save();
+
+    io.emit('cartUpdated', await Cart.findById(cid).populate('products.product'));
+
+    res.status(200).json(cart);
+  } catch (error) {
+    res.status(500).json({
+      error: 'Error al eliminar el producto del carrito',
+      details: error.message,
+    });
+  }
+});
+
 // Ruta DELETE /:cid - Eliminar carrito
 router.delete('/:cid', async (req, res) => {
   try {

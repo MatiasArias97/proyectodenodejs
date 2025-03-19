@@ -1,42 +1,31 @@
-const mongoose = require('mongoose');
-
-// Esquema de Producto con Mongoose
-const productSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    price: { type: Number, required: true },
-    stock: { type: Number, required: true },
-    description: { type: String, required: true }
-});
-
-const Product = mongoose.model('Product', productSchema);
+const Product = require('../models/productModel'); // Importa el modelo Product
 
 class ProductManager {
-    async getProducts() {
-        try {
-            const products = await Product.find();
-            return products;
-        } catch (error) {
-            console.error('Error al obtener productos:', error);
-            return [];
-        }
+  async addProduct(productData) {
+    try {
+      const product = new Product(productData);
+      await product.save();
+      return product;
+    } catch (error) {
+      throw new Error('Error al guardar el producto: ' + error.message);
     }
+  }
 
-    async addProduct(product) {
-        try {
-            const newProduct = new Product(product);
-            await newProduct.save();
-        } catch (error) {
-            console.error('Error al agregar producto:', error);
-        }
+  async getProducts(filter = {}, options = {}) {
+    try {
+      return await Product.paginate(filter, options); // Paginación, filtros y ordenamiento
+    } catch (error) {
+      throw new Error('Error al obtener los productos: ' + error.message);
     }
+  }
 
-    async deleteProduct(id) {
-        try {
-            await Product.findByIdAndDelete(id);
-        } catch (error) {
-            console.error('Error al eliminar producto:', error);
-        }
+  async getProductById(id) {
+    try {
+      return await Product.findById(id);
+    } catch (error) {
+      throw new Error('Error al obtener el producto: ' + error.message);
     }
+  }
 }
 
 module.exports = ProductManager;

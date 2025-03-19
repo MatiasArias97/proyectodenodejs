@@ -12,16 +12,17 @@ const cartSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 1,
-      }
-    }
-  ]
+        min: [1, 'La cantidad debe ser al menos 1'], // Validación para asegurar que la cantidad no sea menor que 1
+      },
+    },
+  ],
 });
 
-// Usamos "populate" automáticamente al realizar consultas
-cartSchema.pre('find', function () {
-  this.populate('products.product');
-});
+// En lugar de usar pre('find'), ahora usamos populate explícitamente en cada consulta
+cartSchema.methods.populateProducts = async function () {
+  await this.populate('products.product').execPopulate();
+};
 
-const Cart = mongoose.model('Cart', cartSchema);
+const Cart = mongoose.models.Cart || mongoose.model('Cart', cartSchema);
 
 module.exports = Cart;

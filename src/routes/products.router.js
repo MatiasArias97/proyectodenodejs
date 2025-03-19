@@ -1,35 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const ProductManager = require('../managers/ProductManager');
-const productManager = new ProductManager('./data/products.json');
-
-// Ruta para mostrar productos en tiempo real
-router.get('/realtimeproducts', (req, res) => {
-    res.render('realtimeproducts', { title: 'Productos en Tiempo Real' });
-});
+const productManager = new ProductManager();
 
 // Ruta para obtener productos con paginación, filtros y ordenamiento
-router.get('/products', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const { page = 1, limit = 10, category, sort, priceRange } = req.query;
-
-        // Paginación y Filtros
-        const query = {};
-        if (category) query.category = category;
-        if (priceRange) {
-            const [minPrice, maxPrice] = priceRange.split('-');
-            query.price = { $gte: minPrice, $lte: maxPrice };
-        }
-
-        // Ordenamiento
-        const sortOptions = {};
-        if (sort) {
-            const [field, order] = sort.split(':');
-            sortOptions[field] = order === 'desc' ? -1 : 1;
-        }
-
-        // Obtener productos con los filtros y ordenamiento
-        const products = await productManager.getProducts(query, parseInt(limit), parseInt(page), sortOptions);
+        const { page = 1, limit = 10, sort, query } = req.query;
+        
+        // Configurar filtros de búsqueda
+        const filter = query ? { title: { $regex: query, $options: 'i' } } : {};
+        
+        // Configurar opciones de paginación y ordenamiento
+        const options = {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            sort: sort === 'asc' ? { price: 1 } : sort === 'desc' ? { price: -1 } : {},
+        };
+        
+        const products = await productManager.getProducts(filter, options);
         res.json(products); // Devuelve los productos con paginación, filtros y ordenamiento
     } catch (error) {
         res.status(500).json({
@@ -39,34 +28,37 @@ router.get('/products', async (req, res) => {
     }
 });
 
-// Socket.IO para manejar eventos de productos en tiempo real
-module.exports = (io) => {
-    io.on('connection', (socket) => {
-        console.log('Nuevo cliente conectado');
+// Ruta para obtener un producto específico por su ID
+router.get('/:productId', async (req, res) => {
+    const { productId } = req.params;
+    try {
+        const product = await productManager.getProductById(productId);
+        if (!product) {
+            return res.status(404).json({ message: 'Producto no encontrado' });
+        }
+        res.status(200).json(product);
+    } catch (error) {
+        console.error('Error obteniendo producto:', error);
+        res.status(500).json({ message: 'Error obteniendo producto' });
+    }
+});
 
-        // Enviar los productos al cliente cuando se conecta
-        productManager.getProducts().then((products) => {
-            socket.emit('updateProducts', products);
-        });
+// Ruta para agregar un producto
+router.post('/', async (req, res) => {
+    try {
+        const { title, price, description, category, available } = req.body;
+        
+        if (!title || !price || !description || !category || available === undefined) {
+            return res.status(400).json({ message: 'Faltan datos requeridos' });
+        }
 
-        // Evento para agregar un nuevo producto
-        socket.on('newProduct', async (product) => {
-            await productManager.addProduct(product);
-            const updatedProducts = await productManager.getProducts();
-            io.emit('updateProducts', updatedProducts); // Emitir a todos los clientes conectados
-        });
+        const newProduct = await productManager.addProduct({ title, price, description, category, available });
 
-        // Evento para eliminar un producto
-        socket.on('deleteProduct', async (id) => {
-            await productManager.deleteProduct(id);
-            const updatedProducts = await productManager.getProducts();
-            io.emit('updateProducts', updatedProducts); // Emitir a todos los clientes conectados
-        });
+        res.status(201).json(newProduct);
+    } catch (error) {
+        console.error('Error al agregar producto:', error);
+        res.status(500).json({ message: 'Error al agregar el producto', details: error.message });
+    }
+});
 
-        socket.on('disconnect', () => {
-            console.log('Cliente desconectado');
-        });
-    });
-};
-
-module.exports.router = router;
+module.exports = router;
