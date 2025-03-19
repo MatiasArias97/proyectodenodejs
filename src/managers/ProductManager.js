@@ -1,5 +1,4 @@
-const Product = require('../models/productModel'); // Importa el modelo Product
-
+const Product = require('../models/productModel'); 
 class ProductManager {
   async addProduct(productData) {
     try {

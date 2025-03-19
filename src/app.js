@@ -13,8 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Exportamos `io` para usarlo en otros archivos
-module.exports.io = io; // Esto permite que otros archivos accedan a `io`
+module.exports.io = io;
 
 const ProductManager = require('./managers/ProductManager');
 const productManager = new ProductManager();
@@ -40,8 +39,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas
-app.use('/api/products', productRouter);  // Ruta de productos
-app.use('/', viewsRouter);                // Ruta de vistas (home, realtimeproducts)
+app.use('/api/products', productRouter);  
+app.use('/', viewsRouter);                
 app.use('/api/carts', cartsRouter);
 
 // Iniciar servidor

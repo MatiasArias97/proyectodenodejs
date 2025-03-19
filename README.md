@@ -16,8 +16,8 @@ Postman (opcional, para probar las API)
 
 Clonar el repositorio:
 
-git clone https://github.com/tu_usuario/proyecto-node.git
-cd proyecto-node
+git clone https://github.com/MatiasArias97/proyectodenodejs.git
+
 
 Instalar dependencias:
 

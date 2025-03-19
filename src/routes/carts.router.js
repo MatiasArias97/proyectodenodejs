@@ -1,8 +1,8 @@
 const express = require('express');
 const CartManager = require('../managers/CartManager');
-const Cart = require('../models/cartModel');  // Usamos el modelo de carrito de MongoDB
-const Product = require('../models/productModel');  // Usamos el modelo de productos
-const { io } = require('../app'); // Traemos el objeto 'io' de socket.io para emitir eventos
+const Cart = require('../models/cartModel'); 
+const Product = require('../models/productModel');  
+const { io } = require('../app'); 
 
 const router = express.Router();
 
@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
 // Ruta GET /:cid - Listar productos de un carrito
 router.get('/:cid', async (req, res) => {
   try {
-    const cart = await Cart.findById(req.params.cid).populate('products.product'); // Traemos productos con 'populate'
+    const cart = await Cart.findById(req.params.cid).populate('products.product'); 
     if (cart) {
       res.json(cart);
     } else {
@@ -66,7 +66,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
 
     await cart.save();
 
-    // Emitimos el evento por WebSocket para actualizar el carrito en tiempo real
+    // WebSocket para actualizar el carrito en tiempo real
     io.emit('cartUpdated', await Cart.findById(cid).populate('products.product'));
 
     res.status(200).json(cart);
@@ -82,7 +82,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
 router.put('/:cid/products/:pid', async (req, res) => {
   try {
     const { cid, pid } = req.params;
-    const { quantity } = req.body; // La cantidad viene desde el cuerpo de la solicitud
+    const { quantity } = req.body; 
 
     const cart = await Cart.findById(cid);
     if (!cart) {

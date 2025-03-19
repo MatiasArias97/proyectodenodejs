@@ -18,7 +18,6 @@ const cartSchema = new mongoose.Schema({
   ],
 });
 
-// En lugar de usar pre('find'), ahora usamos populate explícitamente en cada consulta
 cartSchema.methods.populateProducts = async function () {
   await this.populate('products.product').execPopulate();
 };

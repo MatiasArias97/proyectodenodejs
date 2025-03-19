@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{CamisetasR18}}</title> <!-- Aquí usamos el título dinámico -->
+    <title>{{CamisetasR18}}</title>
     <link rel="stylesheet" href="../public/style.css">
 </head>
 <body>
     
-    <!-- Si tienes productos, los mostramos -->
+
     {{#if products.length}}
         <ul>
             {{#each products}}
                 <li>
                     <strong>{{this.title}}</strong> - ${{this.price}}
-                    <a href="/products/{{this._id}}">Ver detalles</a> <!-- Enlace al detalle del producto -->
+                    <a href="/products/{{this._id}}">Ver detalles</a> 
                     <form action="/carts/{{cartId}}/product/{{this._id}}" method="POST">
-                        <button type="submit">Agregar al carrito</button> <!-- Botón para agregar al carrito -->
+                        <button type="submit">Agregar al carrito</button> 
                     </form>
                 </li>
             {{/each}}
         </ul>
 
-        <!-- Paginación (si corresponde) -->
+        
         <div class="pagination">
             {{#if hasPrevPage}}
                 <a href="/products?page={{prevPage}}&limit={{limit}}">Página anterior</a>
